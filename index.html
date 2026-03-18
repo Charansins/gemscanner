@@ -1,278 +1,287 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GemScanner AI</title>
+<title>GemScanner V7 Hybrid Pro</title>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#08090c;color:#eef2ff;font-family:sans-serif;min-height:100vh}
-#setup{position:fixed;inset:0;background:#08090c;z-index:999;overflow-y:auto;padding:20px}
-.si{background:#0e1116;border:1px solid #2a3347;border-radius:14px;padding:22px 18px;max-width:420px;margin:0 auto}
-.si h1{font-size:22px;font-weight:900;color:#00ff88;margin-bottom:4px}
-.si p{font-size:9px;color:#3d4e6b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
-.infobox{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.25);border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#7b8db0;line-height:1.8}
-.infobox b{color:#00ff88}
-.infobox a{color:#29b6f6}
-label{font-size:13px;font-weight:700;color:#aab;margin-bottom:6px;display:block}
-.hint{font-size:10px;color:#3d4e6b;margin-bottom:8px;line-height:1.6}
-textarea{width:100%;background:#08090c;border:2px solid #2a3347;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#eef2ff;outline:none;resize:none;height:90px;display:block;margin-bottom:6px}
-textarea:focus{border-color:#00ff88}
-.hint2{font-size:10px;color:#3d4e6b;margin-bottom:14px;line-height:1.6}
-#serr{display:none;font-size:11px;color:#ff3d5a;background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);border-radius:6px;padding:8px;margin-bottom:12px;line-height:1.6}
-#launchBtn{width:100%;padding:16px;background:#00ff88;border:none;border-radius:10px;font-size:16px;font-weight:900;color:#000;cursor:pointer;letter-spacing:.05em;display:block;-webkit-appearance:none}
-.warn{font-size:9px;color:#3d4e6b;text-align:center;margin-top:12px;line-height:1.7}
-#app{display:none}
-.bar{position:sticky;top:0;z-index:100;background:rgba(8,9,12,.97);border-bottom:1px solid #1f2636;padding:10px 14px}
-.bar-r1{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.title{font-size:17px;font-weight:900;color:#00ff88;flex:1}
-.ws{display:flex;align-items:center;gap:5px;font-size:10px;color:#3d4e6b;padding:4px 10px;background:#0e1116;border:1px solid #1f2636;border-radius:20px;font-family:monospace}
-.led{width:7px;height:7px;border-radius:50%;background:#1c2535;flex-shrink:0}
-.led.on{background:#00ff88;box-shadow:0 0 6px #00ff88;animation:pp 2s infinite}
-.led.con{background:#ffc107;animation:pp .5s infinite}
-.led.err{background:#ff3d5a}
-@keyframes pp{0%,100%{opacity:1}50%{opacity:.4}}
-#sb{padding:8px 16px;border-radius:8px;border:1px solid #2a3347;background:transparent;font-size:11px;font-weight:700;color:#eef2ff;cursor:pointer;font-family:monospace;white-space:nowrap}
-#sb.on{border-color:#00ff88;color:#00ff88;background:rgba(0,255,136,.1)}
-.bar-r2{display:flex;gap:5px;flex-wrap:wrap}
-.chip{display:flex;align-items:center;gap:4px;padding:4px 9px;background:#13161d;border:1px solid #1f2636;border-radius:6px;font-size:10px;color:#7b8db0;font-family:monospace}
-.chip b{font-weight:700;font-size:11px}
-.chip.g b{color:#00ff88}.chip.y b{color:#ffc107}.chip.r b{color:#ff3d5a}.chip.bl b{color:#29b6f6}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:8px 14px;border-bottom:1px solid #1f2636}
-.st{background:#0e1116;border:1px solid #1f2636;border-radius:8px;padding:7px 8px;text-align:center}
-.st-n{font-size:17px;font-weight:800;font-family:monospace}
-.st-l{font-size:7px;color:#3d4e6b;text-transform:uppercase;letter-spacing:.07em;margin-top:1px}
-.st.g .st-n{color:#00ff88}.st.r .st-n{color:#ff3d5a}.st.y .st-n{color:#ffc107}.st.bl .st-n{color:#29b6f6}
-.fbr{display:flex;gap:5px;padding:8px 14px;border-bottom:1px solid #1f2636;overflow-x:auto}
-.fbr::-webkit-scrollbar{display:none}
-.fb{padding:5px 11px;border-radius:6px;border:1px solid #1f2636;background:transparent;font-size:10px;font-weight:700;color:#3d4e6b;cursor:pointer;white-space:nowrap;font-family:monospace}
-.fb.on{border-color:#00ff88;color:#00ff88;background:rgba(0,255,136,.08)}
-.stbar{padding:5px 14px;font-size:10px;color:#3d4e6b;background:#0e1116;border-bottom:1px solid #1f2636;display:flex;align-items:center;gap:6px;min-height:26px;font-family:monospace}
-.sl{width:6px;height:6px;border-radius:50%;background:#1c2535;flex-shrink:0}
-.sl.an{background:#29b6f6;animation:pp .8s infinite}
-.sl.ok{background:#00ff88}.sl.er{background:#ff3d5a}
-.gstrip{padding:9px 14px;border-bottom:1px solid #1f2636;background:#0e1116;display:none}
-.gt{font-size:9px;font-weight:700;color:#00ff88;text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px;font-family:monospace}
-.gscr{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px}
-.gscr::-webkit-scrollbar{display:none}
-.gc{flex-shrink:0;width:155px;background:#13161d;border:1px solid rgba(0,255,136,.25);border-radius:10px;padding:9px;cursor:pointer;position:relative;overflow:hidden}
-.gc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#29b6f6)}
-.gc-n{font-size:11px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gc-s{font-size:8px;color:#3d4e6b;font-family:monospace;margin-bottom:5px}
-.gc-ca{font-size:8px;font-family:monospace;color:#3d4e6b;background:#08090c;border:1px solid #1f2636;border-radius:4px;padding:4px 6px;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;display:block}
-.gc-ca:active{color:#00ff88}
-.gc-p{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#00ff88;padding:4px;border:1px solid rgba(0,255,136,.2);border-radius:4px;cursor:pointer;font-family:monospace}
-.feed{padding:7px 14px;display:flex;flex-direction:column;gap:5px}
-.empty{text-align:center;padding:50px 20px;font-size:11px;color:#3d4e6b;line-height:2.3;font-family:monospace}
-.empty b{color:#00ff88}
-.tc{background:#0e1116;border:1px solid #1f2636;border-radius:11px;padding:11px 13px 11px 16px;cursor:pointer;position:relative;overflow:hidden}
-.tc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#1f2636}
-.tc.s5::before{background:linear-gradient(180deg,#00ff88,#00cc6a)}
-.tc.s4::before{background:#4cdf9f}
-.tc.s3::before{background:#ffc107}
-.tc.s2::before{background:#ff8c42}
-.tc.s1::before{background:#ff3d5a}
-.tc.pnd::before{background:#29b6f6;animation:pp 1s infinite}
-.tc:active{background:#13161d}
-.tc-t{display:flex;align-items:center;gap:9px;margin-bottom:6px}
-.ti{width:40px;height:40px;border-radius:9px;object-fit:cover;background:#181d27;flex-shrink:0;border:1px solid #1f2636}
-.tf{width:40px;height:40px;border-radius:9px;background:#181d27;border:1px solid #1f2636;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#3d4e6b;flex-shrink:0}
-.tn{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;letter-spacing:-.02em}
-.ts{font-size:9px;color:#3d4e6b;background:#181d27;border:1px solid #1f2636;padding:1px 5px;border-radius:3px;font-family:monospace;flex-shrink:0}
-.tv{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0;font-family:monospace}
-.vg{background:rgba(0,255,136,.15);color:#00ff88;border:1px solid rgba(0,255,136,.35)}
-.vgo{background:rgba(76,223,159,.12);color:#4cdf9f;border:1px solid rgba(76,223,159,.3)}
-.vw{background:rgba(255,193,7,.12);color:#ffc107;border:1px solid rgba(255,193,7,.3)}
-.vsk{background:rgba(255,140,66,.1);color:#ff8c42;border:1px solid rgba(255,140,66,.25)}
-.va{background:rgba(255,61,90,.12);color:#ff3d5a;border:1px solid rgba(255,61,90,.3)}
-.vp{background:rgba(41,182,246,.1);color:#29b6f6;border:1px solid rgba(41,182,246,.3);animation:pp 1.2s infinite}
-.tm{display:flex;align-items:center;gap:6px}
-.ta{font-size:9px;color:#3d4e6b;font-family:monospace}
-.tstars{display:flex;gap:1px;margin-left:auto}
-.tstar{font-size:12px}.tstar.on{color:#ffd600}.tstar.off{color:#1f2636}
-.ttags{display:flex;gap:3px;flex-wrap:wrap;margin-top:5px}
-.tag{font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid;font-weight:600;font-family:monospace}
-.tok{color:#00ff88;border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.07)}
-.twn{color:#ffc107;border-color:rgba(255,193,7,.3);background:rgba(255,193,7,.07)}
-.tbd{color:#ff3d5a;border-color:rgba(255,61,90,.3);background:rgba(255,61,90,.07)}
-.tpn{color:#1c2535;border-color:#1f2636;animation:pp 1.5s infinite}
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200}
-.ov.open{display:block}
-.dr{position:fixed;bottom:0;left:0;right:0;max-height:90vh;background:#0e1116;border-top:1px solid #2a3347;border-radius:20px 20px 0 0;z-index:201;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease}
-.dr.open{transform:translateY(0)}
-.drh{width:36px;height:4px;background:#2a3347;border-radius:2px;margin:12px auto 0;cursor:pointer}
-.drb{padding:14px 16px 40px}
-.dri{width:54px;height:54px;border-radius:11px;object-fit:cover;background:#181d27;border:1px solid #1f2636;flex-shrink:0}
-.drf{width:54px;height:54px;border-radius:11px;background:#181d27;border:1px solid #1f2636;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#3d4e6b;flex-shrink:0}
-.bstar{font-size:25px}.bstar.on{color:#ffd600;text-shadow:0 0 10px rgba(255,214,0,.5)}.bstar.off{color:#1f2636}
-.rl{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);color:#00ff88}
-.rm{background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);color:#ffc107}
-.rh{background:rgba(255,61,90,.1);border:1px solid rgba(255,61,90,.3);color:#ff3d5a}
-.sigc{background:#13161d;border:1px solid #1f2636;border-radius:8px;padding:8px 10px}
-.sigc-n{font-size:8px;font-family:monospace;color:#3d4e6b;text-transform:uppercase;letter-spacing:.09em;margin-bottom:3px}
-.sigc-v{font-size:11px;font-family:monospace;font-weight:600;margin-bottom:4px;line-height:1.3}
-.sigc.ok .sigc-v{color:#00ff88}.sigc.warn .sigc-v{color:#ffc107}.sigc.bad .sigc-v{color:#ff3d5a}
-.sigc-b{height:2px;background:#181d27;border-radius:1px;overflow:hidden}
-.sigc-f{height:100%;border-radius:1px}
-.sigc.ok .sigc-f{background:#00ff88}.sigc.warn .sigc-f{background:#ffc107}.sigc.bad .sigc-f{background:#ff3d5a}
-.gcab{background:#08090c;border:1px solid rgba(0,255,136,.4);border-radius:10px;padding:14px;position:relative;overflow:hidden}
-.carow{display:flex;align-items:center;gap:7px;background:#0e1116;border:1px solid #2a3347;border-radius:7px;padding:10px;cursor:pointer;margin-bottom:9px}
-.carow:active{border-color:rgba(0,255,136,.4)}
-.cat{font-family:monospace;font-size:11px;color:#eef2ff;flex:1;word-break:break-all;line-height:1.5}
-.cabtn{font-family:monospace;font-size:10px;font-weight:700;padding:6px 10px;background:#13161d;border:1px solid #2a3347;border-radius:5px;color:#3d4e6b;cursor:pointer;flex-shrink:0;white-space:nowrap}
-.cabtn.ok{color:#00ff88;border-color:rgba(0,255,136,.35);background:rgba(0,255,136,.08)}
-.pbtn{display:flex;align-items:center;justify-content:center;width:100%;padding:12px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:8px;color:#00ff88;font-family:monospace;font-size:12px;font-weight:700;cursor:pointer}
-.pbtn:active{background:rgba(0,255,136,.2)}
-.pca{display:flex;align-items:center;gap:7px;background:#13161d;border:1px solid #1f2636;border-radius:7px;padding:9px 11px;cursor:pointer;margin-bottom:8px}
-.pcat{font-family:monospace;font-size:10px;color:#7b8db0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pcac{font-family:monospace;font-size:9px;color:#3d4e6b;padding:3px 8px;background:#08090c;border:1px solid #1f2636;border-radius:4px;flex-shrink:0}
-.rawb{background:#08090c;border:1px solid #1f2636;border-radius:7px;padding:9px 11px;font-family:monospace;font-size:9px;color:#3d4e6b;line-height:2;word-break:break-all}
-.rawr{display:flex;gap:8px;border-bottom:1px solid #1f2636;padding:1px 0}
-.rawr:last-child{border:none}
-.rawk{color:#7b8db0;min-width:80px;flex-shrink:0}.rawv{color:#eef2ff}
-.nf{position:fixed;bottom:20px;left:50%;z-index:999;transform:translateX(-50%) translateY(100px);background:#0e1116;border:1px solid rgba(0,255,136,.5);border-radius:12px;padding:11px 15px;display:flex;align-items:center;gap:10px;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 40px rgba(0,0,0,.6);max-width:310px;width:90%;cursor:pointer}
-.nf.show{transform:translateX(-50%) translateY(0)}
-::-webkit-scrollbar{width:3px;height:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#2a3347;border-radius:2px}
+body{background:#0a0f14;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+
+.top{
+  padding:12px;
+  background:#111827;
+  border-bottom:1px solid #1f2937;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.title{font-weight:700;font-size:15px}
+.status{font-size:11px;color:#8b949e}
+
+.btn{
+  padding:6px 12px;
+  border-radius:6px;
+  background:#00ff88;
+  color:#000;
+  font-weight:600;
+  border:none;
+  font-size:12px;
+}
+
+.feed{padding:10px}
+
+.card{
+  background:#111827;
+  border:1px solid #1f2937;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.name{font-weight:600;font-size:14px}
+.symbol{font-size:11px;color:#8b949e;margin-left:6px}
+
+.badge{
+  font-size:10px;
+  padding:3px 6px;
+  border-radius:5px;
+  font-weight:600;
+}
+
+.skip{background:#2a1a1f;color:#ff5a6e}
+.watch{background:#2a2416;color:#ffc107}
+.good{background:#1d2a24;color:#4cdf9f}
+.gem{background:#0f2a1f;color:#00ff88}
+
+.metrics{font-size:10px;color:#8b949e;margin-top:4px}
+.alpha{font-size:12px;font-weight:600;margin-top:4px}
+
+.progress{
+  height:5px;
+  background:#1f2937;
+  border-radius:4px;
+  margin-top:6px;
+  overflow:hidden;
+}
+
+.fill{height:100%}
+
+.subrow{
+  display:flex;
+  justify-content:space-between;
+  font-size:9px;
+  margin-top:4px;
+  color:#8b949e;
+}
 </style>
 </head>
+
 <body>
 
-<div id="setup">
-  <div class="si">
-    <h1>GemScanner AI</h1>
-    <p>pump.fun live detector</p>
-    <div class="infobox">
-      <b>You are on https:// — API will work!</b><br>
-      Get free key: <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
-    </div>
-
-    <div style="background:#13161d;border:1px solid #2a3347;border-radius:8px;padding:14px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:#00ff88;font-family:monospace;margin-bottom:8px">OPTION 1 — Type key + tap GO</div>
-      <input type="text" id="apiKeyShort" placeholder="Paste key here then tap GO" style="width:100%;background:#08090c;border:2px solid #2a3347;border-radius:7px;padding:11px;font-family:monospace;font-size:10px;color:#eef2ff;outline:none;display:block;margin-bottom:8px">
-      <a href="#" id="goBtn" style="display:block;width:100%;padding:14px;background:#00ff88;border-radius:8px;font-size:15px;font-weight:900;color:#000;text-align:center;text-decoration:none;letter-spacing:.05em;font-family:monospace" onclick="doGo();return false;">GO &rarr;</a>
-    </div>
-
-    <div style="background:#13161d;border:1px solid #2a3347;border-radius:8px;padding:14px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:#29b6f6;font-family:monospace;margin-bottom:8px">OPTION 2 — Open URL with key</div>
-      <div style="font-size:10px;color:#7b8db0;font-family:monospace;line-height:1.8">
-        Go to Chrome address bar and type:<br>
-        <span style="color:#00ff88">charansins.github.io/gemscanner#YOUR_KEY</span><br>
-        Replace YOUR_KEY with your sk-ant-... key<br>
-        Page will launch automatically
-      </div>
-    </div>
-
-    <div id="serr" style="display:none;font-size:11px;color:#ff3d5a;padding:8px;background:rgba(255,61,90,.08);border-radius:6px;margin-bottom:10px"></div>
-    <div class="warn">Research tool only. Key stays in browser memory only.</div>
+<div class="top">
+  <div>
+    <div class="title">💎 GemScanner V7 Hybrid Pro</div>
+    <div class="status" id="status">Idle</div>
   </div>
+  <button class="btn" onclick="toggleScan()" id="scanBtn">Start</button>
 </div>
 
-<div id="app">
-  <div class="bar">
-    <div class="bar-r1">
-      <div class="title">GemScanner AI</div>
-      <div class="ws"><div class="led" id="led"></div><span id="wsL">offline</span></div>
-      <button id="sb" onclick="toggleScan()">Start</button>
-    </div>
-    <div class="bar-r2">
-      <div class="chip bl">scanned <b id="hT">0</b></div>
-      <div class="chip g">gems <b id="hG">0</b></div>
-      <div class="chip y">watch <b id="hW">0</b></div>
-      <div class="chip r">risky <b id="hR">0</b></div>
-    </div>
-  </div>
-  <div class="stats">
-    <div class="st bl"><div class="st-n" id="sT">0</div><div class="st-l">scanned</div></div>
-    <div class="st g"><div class="st-n" id="sG">0</div><div class="st-l">gems</div></div>
-    <div class="st y"><div class="st-n" id="sW">0</div><div class="st-l">watch</div></div>
-    <div class="st r"><div class="st-n" id="sR">0</div><div class="st-l">risky</div></div>
-  </div>
-  <div class="fbr">
-    <div class="fb on" id="fa" onclick="setF('all')">All</div>
-    <div class="fb" id="fg" onclick="setF('gem')">Gems</div>
-    <div class="fb" id="fw" onclick="setF('watch')">Watch</div>
-    <div class="fb" id="fs" onclick="setF('skip')">Skip</div>
-    <div class="fb" id="fp" onclick="setF('pend')">Pending</div>
-  </div>
-  <div class="stbar"><div class="sl" id="sl"></div><span id="stxt">idle</span></div>
-  <div class="gstrip" id="gstrip"><div class="gt">GEMS - tap CA to copy</div><div class="gscr" id="gscr"></div></div>
-  <div class="feed" id="feed">
-    <div class="empty" id="fmsg">Tap <b>Start</b> to connect to pump.fun live feed<br><br>Every new token scored 1-5 stars by AI<br>Gems show CA instantly</div>
-  </div>
-</div>
-
-<div class="ov" id="ov" onclick="closeDr()"></div>
-<div class="dr" id="dr"><div class="drh" onclick="closeDr()"></div><div class="drb" id="drb"></div></div>
-<div class="nf" id="nf" onclick="nfTap()">
-  <span style="font-size:22px">&#128142;</span>
-  <div><div style="font-size:12px;font-weight:700;color:#00ff88;margin-bottom:2px" id="nfN">GEM</div><div style="font-family:monospace;font-size:9px;color:#3d4e6b" id="nfC">tap to view</div></div>
-</div>
+<div class="feed" id="feed"></div>
 
 <script>
-var KEY='sk-ant-api03-oLfScnEiGVCoF5BZX0X9FS5DKpx5g0S-CNEJ2iQQNBbdL6FGHJRApn-j94_UUBNPiPitZ-fzfUqc8PYtS3iBcg-206JRAAA',ws=null,scanning=false;
-var tokens=[],analyses={},curF='all';
-var cT=0,cG=0,cW=0,cR=0;
-var queue=[],busy=false,selId=null,nfId=null,ntimer=null;
 
-var SYS='You are a pump.fun analyst. Rate every token 1-5 stars. Return only valid JSON.\n\n1 star AVOID: no socials + no description + generic name\n2 stars SKIP: only 1 social or weak concept\n3 stars WATCH: 1-2 socials OR original concept\n4 stars GOOD: 2+ socials + decent concept + description\n5 stars GEM: all 3 socials + original viral concept + description + image\n\nRug: HIGH=0 socials, MEDIUM=1, LOW=2+\n\nRespond with ONLY this JSON (fill in values):\n{"stars":3,"verdict":"WATCH","rugpull_risk":"MEDIUM","confidence":70,"signals":{"meme_strength":{"score":5,"label":"ok meme","status":"ok"},"social_presence":{"score":5,"label":"no socials","status":"bad"},"rug_safety":{"score":5,"label":"medium risk","status":"warn"},"originality":{"score":5,"label":"original","status":"ok"},"community":{"score":5,"label":"no community","status":"bad"},"viral_potential":{"score":5,"label":"low viral","status":"warn"}},"reasoning":"Analysis here.","key_risks":["risk1","risk2"],"key_upsides":["upside1","upside2"],"gem_summary":"One sentence."}';
+let ws=null;
+let scanning=false;
+let tokens=[];
+let creatorDB=JSON.parse(localStorage.getItem("creatorDB")||"{}");
 
-function launch(k){
-  KEY=k;
-  document.getElementById('setup').style.display='none';
-  document.getElementById('app').style.display='block';
+function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+
+/* ===== MARKET DATA ===== */
+
+async function fetchDexData(mint){
+  try{
+    const res=await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
+    const json=await res.json();
+    if(!json.pairs||!json.pairs.length) return null;
+    const p=json.pairs[0];
+
+    return {
+      liquidity:p.liquidity?.usd||0,
+      volume:p.volume?.h24||0,
+      buys:p.txns?.h1?.buys||0,
+      sells:p.txns?.h1?.sells||0,
+      priceChange:p.priceChange?.h1||0
+    };
+  }catch(e){return null;}
 }
 
-function doGo(){
-  var inp=document.getElementById('apiKeyShort');
-  var k=inp?inp.value.trim():'';
-  // strip any URL prefix if user accidentally included it
-  if(k.indexOf('sk-ant')>0) k=k.slice(k.indexOf('sk-ant'));
-  if(k.length>20){
-    launch(k);
-  } else {
-    var err=document.getElementById('serr');
-    err.textContent='Key not found. Make sure you pasted the full sk-ant-... key.';
-    err.style.display='block';
+/* ===== SCORING ENGINE ===== */
+
+function computeAlpha(m){
+
+  let score=50;
+
+  // Liquidity depth
+  if(m.liquidity>75000) score+=12;
+  else if(m.liquidity<5000) score-=20;
+
+  // Volume strength
+  if(m.volume>150000) score+=10;
+  else if(m.volume<10000) score-=12;
+
+  // Buy pressure
+  if(m.buys>m.sells*1.5) score+=15;
+  if(m.sells>m.buys*1.5) score-=18;
+
+  // Price momentum
+  if(m.priceChange>25) score+=10;
+  if(m.priceChange<-20) score-=15;
+
+  // Volatility regime
+  if(Math.abs(m.priceChange)>40) score-=5;
+
+  score=clamp(score,0,100);
+
+  let verdict="SKIP",className="skip";
+  if(score>=90){verdict="GEM";className="gem";}
+  else if(score>=75){verdict="GOOD";className="good";}
+  else if(score>=55){verdict="WATCH";className="watch";}
+
+  const rug=clamp(100-score,5,95);
+  const confidence=clamp(score-15,20,95);
+
+  return {score,verdict,class:className,rug,confidence};
+}
+
+/* ===== CREATOR MEMORY ===== */
+
+function updateCreator(wallet){
+  if(!creatorDB[wallet]) creatorDB[wallet]={deploys:0};
+  creatorDB[wallet].deploys++;
+  localStorage.setItem("creatorDB",JSON.stringify(creatorDB));
+  return creatorDB[wallet].deploys;
+}
+
+/* ===== RENDER ===== */
+
+function render(){
+
+  tokens.sort((a,b)=>b.score-a.score);
+
+  const feed=document.getElementById("feed");
+  feed.innerHTML="";
+
+  tokens.forEach(t=>{
+
+    const div=document.createElement("div");
+    div.className="card";
+
+    const color =
+      t.verdict==="GEM"?"#00ff88":
+      t.verdict==="GOOD"?"#4cdf9f":
+      t.verdict==="WATCH"?"#ffc107":
+      "#ff5a6e";
+
+    div.innerHTML=`
+      <div class="row">
+        <div class="name">${t.name}
+          <span class="symbol">${t.symbol}</span>
+        </div>
+        <div class="badge ${t.class}">${t.verdict}</div>
+      </div>
+
+      <div class="alpha">Alpha ${t.score}/100</div>
+
+      <div class="metrics">
+        Liq $${Math.round(t.liquidity)} |
+        Vol $${Math.round(t.volume)} |
+        Buys ${t.buys} |
+        Sells ${t.sells}
+      </div>
+
+      <div class="subrow">
+        <div>1H ${t.priceChange}%</div>
+        <div>Rug ${t.rug}%</div>
+        <div>Conf ${t.confidence}%</div>
+      </div>
+
+      <div class="progress">
+        <div class="fill" style="width:${t.score}%;background:${color}"></div>
+      </div>
+    `;
+
+    div.onclick=()=>{
+      window.location.href="https://pump.fun/"+t.mint;
+    };
+
+    feed.appendChild(div);
+  });
+}
+
+/* ===== LIVE ===== */
+
+function toggleScan(){
+
+  const btn=document.getElementById("scanBtn");
+  const status=document.getElementById("status");
+
+  if(scanning){
+    ws.close();
+    scanning=false;
+    btn.innerText="Start";
+    status.innerText="Stopped";
+    return;
   }
-}
 
-window.addEventListener('load',function(){
-  // Key is hardcoded - skip setup
-  document.getElementById('setup').style.display='none';
-  document.getElementById('app').style.display='block';
-  // Check URL hash for key
-  var hash=window.location.hash.slice(1);
-  if(hash&&hash.length>10){
-    if(hash.indexOf('sk-ant')>=0){
-      var k=hash.slice(hash.indexOf('sk-ant'));
-      launch(k); return;
+  scanning=true;
+  btn.innerText="Stop";
+  status.innerText="Live Sniper Mode";
+
+  ws=new WebSocket("wss://pumpportal.fun/api/data");
+
+  ws.onopen=()=>{
+    ws.send(JSON.stringify({method:"subscribeNewToken"}));
+  };
+
+  ws.onmessage=async(e)=>{
+    const data=JSON.parse(e.data);
+    if(!data.mint) return;
+
+    const dex=await fetchDexData(data.mint);
+    if(!dex) return;
+
+    updateCreator(data.creator||"unknown");
+
+    const result=computeAlpha(dex);
+
+    tokens.unshift({
+      mint:data.mint,
+      name:data.name,
+      symbol:data.symbol,
+      ...dex,
+      ...result
+    });
+
+    tokens=tokens.slice(0,60);
+
+    if(result.verdict==="GEM"){
+      if(navigator.vibrate) navigator.vibrate(200);
     }
-    launch(hash); return;
-  }
-  // Poll every 300ms - catches ALL paste methods
-  setInterval(function(){
-    if(KEY) return;
-    var inp=document.getElementById('apiKeyShort');
-    if(!inp) return;
-    var k=inp.value.trim();
-    if(k.indexOf('sk-ant')>0) k=k.slice(k.indexOf('sk-ant'));
-    if(k.length>20){ launch(k); }
-  },300);
-  // Wire up events
-  var inp=document.getElementById('apiKeyShort');
-  if(inp){
-    inp.addEventListener('input',doGo);
-    inp.addEventListener('paste',function(){setTimeout(doGo,200);});
-    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doGo();}});
-  }
-  var btn=document.getElementById('goBtn');
-  if(btn){
-    btn.onclick=function(e){e.preventDefault();doGo();return false;};
-    btn.addEventListener('touchend',function(e){e.preventDefault();doGo();});
-  }
-});
 
-function toggleScan(){scanning?stopScan():startScan();}
-function s
+    render();
+  };
+}
+
+</script>
+</body>
+</html>
