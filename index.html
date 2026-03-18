@@ -145,14 +145,26 @@ textarea:focus{border-color:#00ff88}
     <p>pump.fun live detector</p>
     <div class="infobox">
       <b>You are on https:// — API will work!</b><br>
-      Get free key: <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a><br>
-      Settings &rarr; API Keys &rarr; Create Key
+      Get free key: <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
     </div>
-    <label>Paste your Anthropic API Key:</label>
-    <div class="hint" style="color:#00ff88;font-weight:700">Paste key below — it will AUTO-LAUNCH instantly</div>
-    <textarea id="apiKey" placeholder="Paste sk-ant-... key here" style="width:100%;background:#08090c;border:2px solid #00ff88;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#eef2ff;outline:none;resize:none;height:100px;display:block;margin-bottom:6px"></textarea>
-    <div id="serr"></div>
-    <div id="keyStatus" style="text-align:center;padding:12px;font-family:monospace;font-size:12px;color:#3d4e6b;border:2px dashed #1f2636;border-radius:8px;margin-bottom:10px">Waiting for key paste...</div>
+
+    <div style="background:#13161d;border:1px solid #2a3347;border-radius:8px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:#00ff88;font-family:monospace;margin-bottom:8px">OPTION 1 — Type key + tap GO</div>
+      <input type="text" id="apiKeyShort" placeholder="Paste key here then tap GO" style="width:100%;background:#08090c;border:2px solid #2a3347;border-radius:7px;padding:11px;font-family:monospace;font-size:10px;color:#eef2ff;outline:none;display:block;margin-bottom:8px">
+      <a href="#" id="goBtn" style="display:block;width:100%;padding:14px;background:#00ff88;border-radius:8px;font-size:15px;font-weight:900;color:#000;text-align:center;text-decoration:none;letter-spacing:.05em;font-family:monospace" onclick="doGo();return false;">GO &rarr;</a>
+    </div>
+
+    <div style="background:#13161d;border:1px solid #2a3347;border-radius:8px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:#29b6f6;font-family:monospace;margin-bottom:8px">OPTION 2 — Open URL with key</div>
+      <div style="font-size:10px;color:#7b8db0;font-family:monospace;line-height:1.8">
+        Go to Chrome address bar and type:<br>
+        <span style="color:#00ff88">charansins.github.io/gemscanner#YOUR_KEY</span><br>
+        Replace YOUR_KEY with your sk-ant-... key<br>
+        Page will launch automatically
+      </div>
+    </div>
+
+    <div id="serr" style="display:none;font-size:11px;color:#ff3d5a;padding:8px;background:rgba(255,61,90,.08);border-radius:6px;margin-bottom:10px"></div>
     <div class="warn">Research tool only. Key stays in browser memory only.</div>
   </div>
 </div>
@@ -206,43 +218,57 @@ var queue=[],busy=false,selId=null,nfId=null,ntimer=null;
 
 var SYS='You are a pump.fun analyst. Rate every token 1-5 stars. Return only valid JSON.\n\n1 star AVOID: no socials + no description + generic name\n2 stars SKIP: only 1 social or weak concept\n3 stars WATCH: 1-2 socials OR original concept\n4 stars GOOD: 2+ socials + decent concept + description\n5 stars GEM: all 3 socials + original viral concept + description + image\n\nRug: HIGH=0 socials, MEDIUM=1, LOW=2+\n\nRespond with ONLY this JSON (fill in values):\n{"stars":3,"verdict":"WATCH","rugpull_risk":"MEDIUM","confidence":70,"signals":{"meme_strength":{"score":5,"label":"ok meme","status":"ok"},"social_presence":{"score":5,"label":"no socials","status":"bad"},"rug_safety":{"score":5,"label":"medium risk","status":"warn"},"originality":{"score":5,"label":"original","status":"ok"},"community":{"score":5,"label":"no community","status":"bad"},"viral_potential":{"score":5,"label":"low viral","status":"warn"}},"reasoning":"Analysis here.","key_risks":["risk1","risk2"],"key_upsides":["upside1","upside2"],"gem_summary":"One sentence."}';
 
-function tryLaunch(){
-  var k=document.getElementById('apiKey').value.trim();
-  var st=document.getElementById('keyStatus');
-  var err=document.getElementById('serr');
-  err.style.display='none';
-  if(!k||k.length<10){
-    st.textContent='Keep pasting... need full key';
-    st.style.color='#3d4e6b';
-    return;
-  }
-  if(!k.includes('ant')){
-    st.textContent='Hmm, does not look like an Anthropic key';
-    st.style.color='#ffc107';
-    return;
-  }
-  // Key looks good - launch!
-  st.textContent='Key detected! Launching...';
-  st.style.color='#00ff88';
-  st.style.borderColor='#00ff88';
+function launch(k){
   KEY=k;
-  setTimeout(function(){
-    document.getElementById('setup').style.display='none';
-    document.getElementById('app').style.display='block';
-  },600);
+  document.getElementById('setup').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+function doGo(){
+  var inp=document.getElementById('apiKeyShort');
+  var k=inp?inp.value.trim():'';
+  // strip any URL prefix if user accidentally included it
+  if(k.indexOf('sk-ant')>0) k=k.slice(k.indexOf('sk-ant'));
+  if(k.length>20){
+    launch(k);
+  } else {
+    var err=document.getElementById('serr');
+    err.textContent='Key not found. Make sure you pasted the full sk-ant-... key.';
+    err.style.display='block';
+  }
 }
 
 window.addEventListener('load',function(){
-  var ta=document.getElementById('apiKey');
-  // Listen for any input change - fires on paste
-  ta.addEventListener('input',tryLaunch);
-  ta.addEventListener('change',tryLaunch);
-  ta.addEventListener('paste',function(){setTimeout(tryLaunch,100);});
-  // Also keyboard
-  ta.addEventListener('keyup',function(e){
-    if(e.key==='Enter')tryLaunch();
-    if(ta.value.trim().length>20)tryLaunch();
-  });
+  // Check URL hash for key
+  var hash=window.location.hash.slice(1);
+  if(hash&&hash.length>10){
+    if(hash.indexOf('sk-ant')>=0){
+      var k=hash.slice(hash.indexOf('sk-ant'));
+      launch(k); return;
+    }
+    launch(hash); return;
+  }
+  // Poll every 300ms - catches ALL paste methods
+  setInterval(function(){
+    if(KEY) return;
+    var inp=document.getElementById('apiKeyShort');
+    if(!inp) return;
+    var k=inp.value.trim();
+    if(k.indexOf('sk-ant')>0) k=k.slice(k.indexOf('sk-ant'));
+    if(k.length>20){ launch(k); }
+  },300);
+  // Wire up events
+  var inp=document.getElementById('apiKeyShort');
+  if(inp){
+    inp.addEventListener('input',doGo);
+    inp.addEventListener('paste',function(){setTimeout(doGo,200);});
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doGo();}});
+  }
+  var btn=document.getElementById('goBtn');
+  if(btn){
+    btn.onclick=function(e){e.preventDefault();doGo();return false;};
+    btn.addEventListener('touchend',function(e){e.preventDefault();doGo();});
+  }
 });
 
 function toggleScan(){scanning?stopScan():startScan();}
@@ -252,23 +278,4 @@ function startScan(){
   try{
     ws=new WebSocket('wss://pumpportal.fun/api/data');
     ws.onopen=function(){
-      setWs('on','live');setSt('ok','connected');
-      ws.send(JSON.stringify({method:'subscribeNewToken'}));
-      var m=document.getElementById('fmsg');
-      if(m)m.innerHTML='<span style="color:#00ff88;font-family:monospace">Connected! Waiting for new launches...</span>';
-    };
-    ws.onmessage=function(e){try{var d=JSON.parse(e.data);if(d.mint&&d.name)onToken(d);}catch(x){}};
-    ws.onerror=function(){setWs('err','error');setSt('er','ws error');};
-    ws.onclose=function(){if(scanning){setWs('con','reconnecting...');setTimeout(function(){if(scanning)startScan();},3000);}};
-  }catch(e){setWs('err','failed');}
-}
-function stopScan(){scanning=false;if(ws){try{ws.close();}catch(e){}}setWs('','offline');updBtn();setSt('','stopped');}
-function setWs(s,l){document.getElementById('led').className='led'+(s?' '+s:'');document.getElementById('wsL').textContent=l;}
-function setSt(t,m){document.getElementById('sl').className='sl'+(t?' '+t:'');document.getElementById('stxt').textContent=m;}
-function updBtn(){var b=document.getElementById('sb');b.className=scanning?'on':'';b.textContent=scanning?'Stop':'Start';}
-
-function onToken(d){
-  var id=d.mint;
-  for(var i=0;i<tokens.length;i++){if(tokens[i].id===id)return;}
-  var m=document.getElementById('fmsg');if(m)m.remove();
-  var tok={id:id,name:d.name||'Unknown',sy
+      setWs('on','live');setSt('ok',
