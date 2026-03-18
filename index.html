@@ -211,7 +211,7 @@ textarea:focus{border-color:#00ff88}
 </div>
 
 <script>
-var KEY='',ws=null,scanning=false;
+var KEY='sk-ant-api03-oLfScnEiGVCoF5BZX0X9FS5DKpx5g0S-CNEJ2iQQNBbdL6FGHJRApn-j94_UUBNPiPitZ-fzfUqc8PYtS3iBcg-206JRAAA',ws=null,scanning=false;
 var tokens=[],analyses={},curF='all';
 var cT=0,cG=0,cW=0,cR=0;
 var queue=[],busy=false,selId=null,nfId=null,ntimer=null;
@@ -239,6 +239,9 @@ function doGo(){
 }
 
 window.addEventListener('load',function(){
+  // Key is hardcoded - skip setup
+  document.getElementById('setup').style.display='none';
+  document.getElementById('app').style.display='block';
   // Check URL hash for key
   var hash=window.location.hash.slice(1);
   if(hash&&hash.length>10){
@@ -272,10 +275,4 @@ window.addEventListener('load',function(){
 });
 
 function toggleScan(){scanning?stopScan():startScan();}
-function startScan(){
-  if(ws){try{ws.close();}catch(e){}}
-  scanning=true;updBtn();setWs('con','connecting...');setSt('an','connecting...');
-  try{
-    ws=new WebSocket('wss://pumpportal.fun/api/data');
-    ws.onopen=function(){
-      setWs('on','live');setSt('ok',
+function s
