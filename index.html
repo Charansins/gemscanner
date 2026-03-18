@@ -189,38 +189,16 @@ header{position:sticky;top:0;z-index:100;background:rgba(8,9,12,.96);backdrop-fi
 </head>
 <body>
 
-<div id="setup">
-  <div class="sbox">
-    <div class="s-logo">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="rgba(0,255,136,.1)" stroke="rgba(0,255,136,.5)" stroke-width="1.2"/>
-        <polygon points="16,7 25,12 25,20 16,25 7,20 7,12" fill="rgba(0,255,136,.18)" stroke="rgba(0,255,136,.3)" stroke-width=".8"/>
-        <circle cx="16" cy="16" r="3.5" fill="#00ff88"/>
-      </svg>
-      <div><div class="s-title">GemScanner AI</div><div class="s-sub">pump.fun live detector</div></div>
+<div id="setup" style="position:fixed;inset:0;background:#08090c;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:#0e1116;border:1px solid #2a3347;border-radius:16px;padding:28px 20px;width:100%;max-width:400px">
+    <div style="font-size:22px;font-weight:900;background:linear-gradient(100deg,#00ff88,#29b6f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px">GemScanner AI</div>
+    <div style="font-size:9px;font-family:monospace;color:#3d4e6b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px">pump.fun live detector</div>
+    <div style="background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.25);border-radius:8px;padding:12px;margin-bottom:18px;font-size:12px;color:#7b8db0;line-height:1.8">
+      ✅ <b style="color:#00ff88">https:// detected — API will work!</b><br>
+      Get free key: <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:#29b6f6">console.anthropic.com</a><br>
+      Go to Settings → API Keys → Create Key
     </div>
-
-    <div class="s-info">
-      <b>✅ You're on https:// — API calls will work!</b><br>
-      Just enter your Anthropic API key below and you're ready to scan live pump.fun tokens.
-    </div>
-
-    <label class="s-label">Anthropic API Key</label>
-    <div class="s-hint">
-      Get your free key at <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a><br>
-      Settings → API Keys → Create Key (starts with sk-ant-)
-    </div>
-    <input class="s-input" type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
-    <div class="s-err" id="serr"></div>
-    <button class="s-btn" onclick="launch()">🚀 Launch GemScanner</button>
-    <div class="s-warn">⚠ Research tool only — not financial advice.<br>Key stays in your browser memory only.</div>
-  </div>
-</div>
-
-<div id="app">
-  <header>
-    <div class="h1">
-      <div class="h-logo">
-        <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-          <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="rgba(0,255,136,.1)" stroke="rgba(0,255,136,.45)" stroke-width="1.2"/>
-          <polygon points="16,7 25,12 25,20 16,25 7,20 7,12" fill="rgba(0,255,136,.18)" stroke="rgba(0,255,136,.28)"
+    <div style="font-size:12px;font-weight:700;color:#7b8db0;margin-bottom:8px">Paste Anthropic API Key here:</div>
+    <textarea id="apiKey" rows="4" placeholder="Paste your full sk-ant-... key here" style="width:100%;background:#08090c;border:2px solid #2a3347;border-radius:8px;padding:12px;font-family:monospace;font-size:10px;color:#eef2ff;outline:none;resize:none;margin-bottom:4px;display:block;line-height:1.5"></textarea>
+    <div style="font-size:10px;color:#3d4e6b;font-family:monospace;margin-bottom:12px">Key is very long (~100 chars) — make sure you copy the whole thing</div>
+    <div id="serr" style="display:none;font-size:11px;color:#ff3d5a;font-family:monospace;margin-bottom:10p
