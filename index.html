@@ -149,11 +149,10 @@ textarea:focus{border-color:#00ff88}
       Settings &rarr; API Keys &rarr; Create Key
     </div>
     <label>Paste your Anthropic API Key:</label>
-    <div class="hint">Long press the box below and tap Paste</div>
-    <textarea id="apiKey" placeholder="Paste sk-ant-... key here"></textarea>
-    <div class="hint2">Copy the full key (~100 chars) from console.anthropic.com</div>
+    <div class="hint" style="color:#00ff88;font-weight:700">Paste key below — it will AUTO-LAUNCH instantly</div>
+    <textarea id="apiKey" placeholder="Paste sk-ant-... key here" style="width:100%;background:#08090c;border:2px solid #00ff88;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#eef2ff;outline:none;resize:none;height:100px;display:block;margin-bottom:6px"></textarea>
     <div id="serr"></div>
-    <button id="launchBtn">LAUNCH GEMSCANNER</button>
+    <div id="keyStatus" style="text-align:center;padding:12px;font-family:monospace;font-size:12px;color:#3d4e6b;border:2px dashed #1f2636;border-radius:8px;margin-bottom:10px">Waiting for key paste...</div>
     <div class="warn">Research tool only. Key stays in browser memory only.</div>
   </div>
 </div>
@@ -207,20 +206,43 @@ var queue=[],busy=false,selId=null,nfId=null,ntimer=null;
 
 var SYS='You are a pump.fun analyst. Rate every token 1-5 stars. Return only valid JSON.\n\n1 star AVOID: no socials + no description + generic name\n2 stars SKIP: only 1 social or weak concept\n3 stars WATCH: 1-2 socials OR original concept\n4 stars GOOD: 2+ socials + decent concept + description\n5 stars GEM: all 3 socials + original viral concept + description + image\n\nRug: HIGH=0 socials, MEDIUM=1, LOW=2+\n\nRespond with ONLY this JSON (fill in values):\n{"stars":3,"verdict":"WATCH","rugpull_risk":"MEDIUM","confidence":70,"signals":{"meme_strength":{"score":5,"label":"ok meme","status":"ok"},"social_presence":{"score":5,"label":"no socials","status":"bad"},"rug_safety":{"score":5,"label":"medium risk","status":"warn"},"originality":{"score":5,"label":"original","status":"ok"},"community":{"score":5,"label":"no community","status":"bad"},"viral_potential":{"score":5,"label":"low viral","status":"warn"}},"reasoning":"Analysis here.","key_risks":["risk1","risk2"],"key_upsides":["upside1","upside2"],"gem_summary":"One sentence."}';
 
-window.addEventListener('load',function(){
-  var btn=document.getElementById('launchBtn');
-  function go(e){
-    if(e&&e.preventDefault)e.preventDefault();
-    var k=document.getElementById('apiKey').value.trim();
-    var err=document.getElementById('serr');
-    err.style.display='none';
-    if(!k||k.length<10){err.textContent='Please paste your full API key first!';err.style.display='block';return;}
-    KEY=k;
+function tryLaunch(){
+  var k=document.getElementById('apiKey').value.trim();
+  var st=document.getElementById('keyStatus');
+  var err=document.getElementById('serr');
+  err.style.display='none';
+  if(!k||k.length<10){
+    st.textContent='Keep pasting... need full key';
+    st.style.color='#3d4e6b';
+    return;
+  }
+  if(!k.includes('ant')){
+    st.textContent='Hmm, does not look like an Anthropic key';
+    st.style.color='#ffc107';
+    return;
+  }
+  // Key looks good - launch!
+  st.textContent='Key detected! Launching...';
+  st.style.color='#00ff88';
+  st.style.borderColor='#00ff88';
+  KEY=k;
+  setTimeout(function(){
     document.getElementById('setup').style.display='none';
     document.getElementById('app').style.display='block';
-  }
-  btn.onclick=go;
-  btn.ontouchend=go;
+  },600);
+}
+
+window.addEventListener('load',function(){
+  var ta=document.getElementById('apiKey');
+  // Listen for any input change - fires on paste
+  ta.addEventListener('input',tryLaunch);
+  ta.addEventListener('change',tryLaunch);
+  ta.addEventListener('paste',function(){setTimeout(tryLaunch,100);});
+  // Also keyboard
+  ta.addEventListener('keyup',function(e){
+    if(e.key==='Enter')tryLaunch();
+    if(ta.value.trim().length>20)tryLaunch();
+  });
 });
 
 function toggleScan(){scanning?stopScan():startScan();}
@@ -249,21 +271,4 @@ function onToken(d){
   var id=d.mint;
   for(var i=0;i<tokens.length;i++){if(tokens[i].id===id)return;}
   var m=document.getElementById('fmsg');if(m)m.remove();
-  var tok={id:id,name:d.name||'Unknown',symbol:d.symbol||'???',mint:d.mint,uri:d.uri||'',description:d.description||'',website:d.website||'',twitter:d.twitter||'',telegram:d.telegram||'',creator:d.traderPublicKey||d.creator||'',imageUri:d.image_uri||d.imageUri||'',solAmount:d.solAmount||0,ts:Date.now(),raw:d};
-  tokens.unshift(tok);if(tokens.length>300)tokens=tokens.slice(0,300);
-  cT++;updStats();addCard(tok);queue.push(id);if(!busy)runQueue();
-}
-
-function runQueue(){
-  if(!queue.length){busy=false;setSt('ok','analyzed '+cT+' tokens');return;}
-  busy=true;
-  var id=queue.shift();
-  var tok=null;for(var i=0;i<tokens.length;i++){if(tokens[i].id===id){tok=tokens[i];break;}}
-  if(tok){setSt('an','analyzing: '+tok.name);doAnalyze(tok);}else{setTimeout(runQueue,100);}
-}
-
-function doAnalyze(tok){
-  var hasTw=!!(tok.twitter&&tok.twitter.length>4);
-  var hasTg=!!(tok.telegram&&tok.telegram.length>4);
-  var hasWeb=!!(tok.website&&tok.website.length>4);
-  var hasDesc=!!(tok.description&&to
+  var tok={id:id,name:d.name||'Unknown',sy
