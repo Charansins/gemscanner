@@ -1,287 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GemScanner V7 Hybrid Pro</title>
-
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0f14;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
-
-.top{
-  padding:12px;
-  background:#111827;
-  border-bottom:1px solid #1f2937;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.title{font-weight:700;font-size:15px}
-.status{font-size:11px;color:#8b949e}
-
-.btn{
-  padding:6px 12px;
-  border-radius:6px;
-  background:#00ff88;
-  color:#000;
-  font-weight:600;
-  border:none;
-  font-size:12px;
-}
-
-.feed{padding:10px}
-
-.card{
-  background:#111827;
-  border:1px solid #1f2937;
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:10px;
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.name{font-weight:600;font-size:14px}
-.symbol{font-size:11px;color:#8b949e;margin-left:6px}
-
-.badge{
-  font-size:10px;
-  padding:3px 6px;
-  border-radius:5px;
-  font-weight:600;
-}
-
-.skip{background:#2a1a1f;color:#ff5a6e}
-.watch{background:#2a2416;color:#ffc107}
-.good{background:#1d2a24;color:#4cdf9f}
-.gem{background:#0f2a1f;color:#00ff88}
-
-.metrics{font-size:10px;color:#8b949e;margin-top:4px}
-.alpha{font-size:12px;font-weight:600;margin-top:4px}
-
-.progress{
-  height:5px;
-  background:#1f2937;
-  border-radius:4px;
-  margin-top:6px;
-  overflow:hidden;
-}
-
-.fill{height:100%}
-
-.subrow{
-  display:flex;
-  justify-content:space-between;
-  font-size:9px;
-  margin-top:4px;
-  color:#8b949e;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Lag Tracker</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: #1e1e1e; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); width: 80%; max-width: 600px; text-align: center; }
+        .status-box { margin: 20px 0; padding: 20px; border-radius: 10px; font-size: 1.2em; font-weight: bold; }
+        .live { background: #2e7d32; } /* Green */
+        .finished { background: #c62828; } /* Red */
+        .alert { background: #f57f17; animation: blink 1s infinite; } /* Orange Blink */
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        button { padding: 15px 30px; font-size: 1em; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; }
+        .timer { font-size: 3em; margin: 10px 0; font-family: monospace; }
+        .log { text-align: left; background: #000; padding: 10px; height: 150px; overflow-y: scroll; font-size: 0.8em; border: 1px solid #333; }
+    </style>
 </head>
-
 <body>
 
-<div class="top">
-  <div>
-    <div class="title">💎 GemScanner V7 Hybrid Pro</div>
-    <div class="status" id="status">Idle</div>
-  </div>
-  <button class="btn" onclick="toggleScan()" id="scanBtn">Start</button>
+<div class="container">
+    <h2>Horse Race Lag Checker</h2>
+    <p>Manual Simulation Mode</p>
+
+    <div id="statusDisplay" class="status-box live">RACE STATUS: IN PROGRESS</div>
+    
+    <div class="timer" id="timerDisplay">00:00:00</div>
+
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <button onclick="simulateFinish()">SIMULATE FINISH</button>
+        <button onclick="resetTracker()" style="background: #555;">RESET</button>
+    </div>
+
+    <h3>System Logs</h3>
+    <div class="log" id="logBox">
+        [System] Ready to track...<br>
+    </div>
 </div>
 
-<div class="feed" id="feed"></div>
-
 <script>
+    let startTime;
+    let running = false;
 
-let ws=null;
-let scanning=false;
-let tokens=[];
-let creatorDB=JSON.parse(localStorage.getItem("creatorDB")||"{}");
-
-function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
-
-/* ===== MARKET DATA ===== */
-
-async function fetchDexData(mint){
-  try{
-    const res=await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
-    const json=await res.json();
-    if(!json.pairs||!json.pairs.length) return null;
-    const p=json.pairs[0];
-
-    return {
-      liquidity:p.liquidity?.usd||0,
-      volume:p.volume?.h24||0,
-      buys:p.txns?.h1?.buys||0,
-      sells:p.txns?.h1?.sells||0,
-      priceChange:p.priceChange?.h1||0
-    };
-  }catch(e){return null;}
-}
-
-/* ===== SCORING ENGINE ===== */
-
-function computeAlpha(m){
-
-  let score=50;
-
-  // Liquidity depth
-  if(m.liquidity>75000) score+=12;
-  else if(m.liquidity<5000) score-=20;
-
-  // Volume strength
-  if(m.volume>150000) score+=10;
-  else if(m.volume<10000) score-=12;
-
-  // Buy pressure
-  if(m.buys>m.sells*1.5) score+=15;
-  if(m.sells>m.buys*1.5) score-=18;
-
-  // Price momentum
-  if(m.priceChange>25) score+=10;
-  if(m.priceChange<-20) score-=15;
-
-  // Volatility regime
-  if(Math.abs(m.priceChange)>40) score-=5;
-
-  score=clamp(score,0,100);
-
-  let verdict="SKIP",className="skip";
-  if(score>=90){verdict="GEM";className="gem";}
-  else if(score>=75){verdict="GOOD";className="good";}
-  else if(score>=55){verdict="WATCH";className="watch";}
-
-  const rug=clamp(100-score,5,95);
-  const confidence=clamp(score-15,20,95);
-
-  return {score,verdict,class:className,rug,confidence};
-}
-
-/* ===== CREATOR MEMORY ===== */
-
-function updateCreator(wallet){
-  if(!creatorDB[wallet]) creatorDB[wallet]={deploys:0};
-  creatorDB[wallet].deploys++;
-  localStorage.setItem("creatorDB",JSON.stringify(creatorDB));
-  return creatorDB[wallet].deploys;
-}
-
-/* ===== RENDER ===== */
-
-function render(){
-
-  tokens.sort((a,b)=>b.score-a.score);
-
-  const feed=document.getElementById("feed");
-  feed.innerHTML="";
-
-  tokens.forEach(t=>{
-
-    const div=document.createElement("div");
-    div.className="card";
-
-    const color =
-      t.verdict==="GEM"?"#00ff88":
-      t.verdict==="GOOD"?"#4cdf9f":
-      t.verdict==="WATCH"?"#ffc107":
-      "#ff5a6e";
-
-    div.innerHTML=`
-      <div class="row">
-        <div class="name">${t.name}
-          <span class="symbol">${t.symbol}</span>
-        </div>
-        <div class="badge ${t.class}">${t.verdict}</div>
-      </div>
-
-      <div class="alpha">Alpha ${t.score}/100</div>
-
-      <div class="metrics">
-        Liq $${Math.round(t.liquidity)} |
-        Vol $${Math.round(t.volume)} |
-        Buys ${t.buys} |
-        Sells ${t.sells}
-      </div>
-
-      <div class="subrow">
-        <div>1H ${t.priceChange}%</div>
-        <div>Rug ${t.rug}%</div>
-        <div>Conf ${t.confidence}%</div>
-      </div>
-
-      <div class="progress">
-        <div class="fill" style="width:${t.score}%;background:${color}"></div>
-      </div>
-    `;
-
-    div.onclick=()=>{
-      window.location.href="https://pump.fun/"+t.mint;
-    };
-
-    feed.appendChild(div);
-  });
-}
-
-/* ===== LIVE ===== */
-
-function toggleScan(){
-
-  const btn=document.getElementById("scanBtn");
-  const status=document.getElementById("status");
-
-  if(scanning){
-    ws.close();
-    scanning=false;
-    btn.innerText="Start";
-    status.innerText="Stopped";
-    return;
-  }
-
-  scanning=true;
-  btn.innerText="Stop";
-  status.innerText="Live Sniper Mode";
-
-  ws=new WebSocket("wss://pumpportal.fun/api/data");
-
-  ws.onopen=()=>{
-    ws.send(JSON.stringify({method:"subscribeNewToken"}));
-  };
-
-  ws.onmessage=async(e)=>{
-    const data=JSON.parse(e.data);
-    if(!data.mint) return;
-
-    const dex=await fetchDexData(data.mint);
-    if(!dex) return;
-
-    updateCreator(data.creator||"unknown");
-
-    const result=computeAlpha(dex);
-
-    tokens.unshift({
-      mint:data.mint,
-      name:data.name,
-      symbol:data.symbol,
-      ...dex,
-      ...result
-    });
-
-    tokens=tokens.slice(0,60);
-
-    if(result.verdict==="GEM"){
-      if(navigator.vibrate) navigator.vibrate(200);
+    function simulateFinish() {
+        const status = document.getElementById('statusDisplay');
+        const log = document.getElementById('logBox');
+        
+        status.innerText = "OFFICIAL STATUS: FINISHED";
+        status.className = "status-box finished";
+        log.innerHTML += `<span style="color: red;">[${new Date().toLocaleTimeString()}] Official Result Received: RACE ENDED</span><br>`;
+        
+        // Start the "Opportunity Window" timer
+        startTime = Date.now();
+        running = true;
+        updateTimer();
+        
+        log.innerHTML += `<span style="color: #4caf50;">[System] Checking bookie lag... if betting is still open, you have a window!</span><br>`;
     }
 
-    render();
-  };
-}
+    function updateTimer() {
+        if (!running) return;
+        const now = Date.now();
+        const diff = now - startTime;
+        const seconds = (diff / 1000).toFixed(2);
+        document.getElementById('timerDisplay').innerText = seconds + "s";
+        
+        if (seconds > 5) {
+            document.getElementById('statusDisplay').className = "status-box alert";
+            document.getElementById('statusDisplay').innerText = "LAG DETECTED - MARKET SHOULD BE CLOSED";
+        }
+        
+        requestAnimationFrame(updateTimer);
+    }
 
+    function resetTracker() {
+        running = false;
+        document.getElementById('timerDisplay').innerText = "00:00:00";
+        const status = document.getElementById('statusDisplay');
+        status.innerText = "RACE STATUS: IN PROGRESS";
+        status.className = "status-box live";
+        document.getElementById('logBox').innerHTML += "[System] Resetting...<br>";
+    }
 </script>
+
 </body>
 </html>
