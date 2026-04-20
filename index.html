@@ -2,84 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Race Lag Tracker</title>
+    <title>4rabet Lag Detective Pro</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { background: #1e1e1e; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); width: 80%; max-width: 600px; text-align: center; }
-        .status-box { margin: 20px 0; padding: 20px; border-radius: 10px; font-size: 1.2em; font-weight: bold; }
-        .live { background: #2e7d32; } /* Green */
-        .finished { background: #c62828; } /* Red */
-        .alert { background: #f57f17; animation: blink 1s infinite; } /* Orange Blink */
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
-        button { padding: 15px 30px; font-size: 1em; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; }
-        .timer { font-size: 3em; margin: 10px 0; font-family: monospace; }
-        .log { text-align: left; background: #000; padding: 10px; height: 150px; overflow-y: scroll; font-size: 0.8em; border: 1px solid #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0b0e11; color: #eaecef; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: #1e2329; border-radius: 12px; padding: 20px; border: 1px solid #333; }
+        h1, h2 { color: #f0b90b; }
+        .race-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #2b3139; }
+        .btn-check { background: #f0b90b; color: black; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .timer-active { font-size: 2.5em; color: #f0b90b; margin: 10px 0; }
+        
+        /* The Blink Alert */
+        @keyframes lag-alert {
+            0% { background-color: #1e2329; }
+            50% { background-color: #ff4d4d; }
+            100% { background-color: #f57f17; }
+        }
+        .blinking { animation: lag-alert 0.5s infinite; color: white !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Horse Race Lag Checker</h2>
-    <p>Manual Simulation Mode</p>
+<h1>🏆 Global Racing Tracker - April 20, 2026</h1>
 
-    <div id="statusDisplay" class="status-box live">RACE STATUS: IN PROGRESS</div>
-    
-    <div class="timer" id="timerDisplay">00:00:00</div>
-
-    <div style="display: flex; gap: 10px; justify-content: center;">
-        <button onclick="simulateFinish()">SIMULATE FINISH</button>
-        <button onclick="resetTracker()" style="background: #555;">RESET</button>
+<div class="grid">
+    <div class="card" id="horseCard">
+        <h2>🏇 Horse Racing Centers</h2>
+        <div class="race-row"><span>Hyderabad (IN)</span> <span>14:30 IST</span></div>
+        <div class="race-row"><span>Longchamp (FR)</span> <span>15:45 CET</span></div>
+        <div class="race-row"><span>Cheltenham (UK)</span> <span>18:00 GMT</span></div>
+        <button class="btn-check" onclick="startCheck('horseCard')">START LAG CHECK (Race Finished)</button>
+        <div class="timer-active" id="horseTimer">0.00s</div>
     </div>
 
-    <h3>System Logs</h3>
-    <div class="log" id="logBox">
-        [System] Ready to track...<br>
+    <div class="card" id="greyCard">
+        <h2>🐕 Greyhound Racing</h2>
+        <div class="race-row"><span>Crayford (UK)</span> <span>11:15 GMT</span></div>
+        <div class="race-row"><span>Wheeling (US)</span> <span>13:00 EST</span></div>
+        <button class="btn-check" onclick="startCheck('greyCard')">START LAG CHECK (Race Finished)</button>
+        <div class="timer-active" id="greyTimer">0.00s</div>
+    </div>
+
+    <div class="card" id="harnessCard">
+        <h2>🚜 Harness Racing</h2>
+        <div class="race-row"><span>Vincennes (FR)</span> <span>16:20 CET</span></div>
+        <div class="race-row"><span>Yonkers (US)</span> <span>19:00 EST</span></div>
+        <button class="btn-check" onclick="startCheck('harnessCard')">START LAG CHECK (Race Finished)</button>
+        <div class="timer-active" id="harnessTimer">0.00s</div>
     </div>
 </div>
 
 <script>
-    let startTime;
-    let running = false;
-
-    function simulateFinish() {
-        const status = document.getElementById('statusDisplay');
-        const log = document.getElementById('logBox');
+    function startCheck(cardId) {
+        let startTime = Date.now();
+        let card = document.getElementById(cardId);
+        let timerDisplay = card.querySelector('.timer-active');
         
-        status.innerText = "OFFICIAL STATUS: FINISHED";
-        status.className = "status-box finished";
-        log.innerHTML += `<span style="color: red;">[${new Date().toLocaleTimeString()}] Official Result Received: RACE ENDED</span><br>`;
-        
-        // Start the "Opportunity Window" timer
-        startTime = Date.now();
-        running = true;
-        updateTimer();
-        
-        log.innerHTML += `<span style="color: #4caf50;">[System] Checking bookie lag... if betting is still open, you have a window!</span><br>`;
-    }
-
-    function updateTimer() {
-        if (!running) return;
-        const now = Date.now();
-        const diff = now - startTime;
-        const seconds = (diff / 1000).toFixed(2);
-        document.getElementById('timerDisplay').innerText = seconds + "s";
-        
-        if (seconds > 5) {
-            document.getElementById('statusDisplay').className = "status-box alert";
-            document.getElementById('statusDisplay').innerText = "LAG DETECTED - MARKET SHOULD BE CLOSED";
-        }
-        
-        requestAnimationFrame(updateTimer);
-    }
-
-    function resetTracker() {
-        running = false;
-        document.getElementById('timerDisplay').innerText = "00:00:00";
-        const status = document.getElementById('statusDisplay');
-        status.innerText = "RACE STATUS: IN PROGRESS";
-        status.className = "status-box live";
-        document.getElementById('logBox').innerHTML += "[System] Resetting...<br>";
+        let interval = setInterval(() => {
+            let elapsed = (Date.now() - startTime) / 1000;
+            timerDisplay.innerText = elapsed.toFixed(2) + "s";
+            
+            // If the race ended 10 seconds ago and 4rabet is still open...
+            if (elapsed > 10) {
+                card.classList.add('blinking');
+                timerDisplay.innerText = "LAG DETECTED: " + elapsed.toFixed(2) + "s";
+            }
+            
+            // Stop after 40 seconds
+            if (elapsed > 40) {
+                clearInterval(interval);
+                card.classList.remove('blinking');
+            }
+        }, 100);
     }
 </script>
 
